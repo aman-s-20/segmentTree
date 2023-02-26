@@ -1,0 +1,81 @@
+#include<bits/stdc++.h>
+using namespace std;
+
+class Node {
+public:
+	int open;
+	int close;
+	int full;
+};
+
+
+Node merge(Node left, Node right) {
+	Node ans;
+	ans.full = left.full + right.full + min(left.open, right.close);
+	ans.open = left.open + right.open - min(left.open, right.close);
+	ans.close = left.close + right.close - min(left.open, right.close);
+	return ans;
+}
+
+class SGTree: public Node {
+public:
+
+	vector<Node> seg;
+	SGTree(int n) {
+		seg.resize(4 * n + 1);
+	}
+
+	void build(int ind, int low, int high, string s) {
+		if (low == high) {
+			if (s[low] == '(') {
+				seg[ind].open = 1;
+			}
+			else {
+				seg[ind].close = 1;
+			}
+			return;
+		}
+
+		int mid = (low + high) >> 1;
+		build(2 * ind + 1, low, mid, s);
+		build(2 * ind + 2, mid + 1, high, s);
+		seg[ind] = merge(seg[2 * ind + 1], seg[2 * ind + 2]);
+	}
+
+	Node query(int ind, int low, int high, int l, int r) {
+		// no overlap
+		// l r low high  or low high l r
+		if (r < low || high < l)return Node();
+
+		// complete overlap
+		// l low high r
+		if (low >= l && high <= r)return seg[ind];
+
+		int mid = (low + high) >> 1;
+		Node left = query(2 * ind + 1, low, mid, l, r);
+		Node right = query(2 * ind + 2, mid + 1, high, l, r);
+		return merge(left, right);
+
+	}
+
+};
+
+
+int main() {
+
+	int m;
+	string s;
+	cin >> s;
+	int n = s.size();
+	SGTree seg1(n);
+	seg1.build(0, 0, n - 1, s);
+	cin >> m;
+	while (m--) {
+		int l, r;
+		cin >> l >> r;
+		l--, r--;
+
+		cout << 2 * seg1.query(0, 0, n - 1, l, r ).full << "\n";
+	}
+
+}
