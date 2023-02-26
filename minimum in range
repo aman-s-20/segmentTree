@@ -1,3 +1,6 @@
+#include<bits/stdc++.h>
+using namespace std;
+
 class SGTree {
 	vector<int> seg;
 	SGTree(int n) {
@@ -43,3 +46,15 @@ class SGTree {
 		seg[ind] = min(seg[2 * ind + 1], seg[2 * ind + 2]);
 	}
 };
+
+
+int main() {
+
+	int n;
+	cin >> n;
+	SGTree seg(n);
+
+	seg.build();
+
+
+}
