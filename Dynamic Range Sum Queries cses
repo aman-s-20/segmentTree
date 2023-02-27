@@ -1,0 +1,87 @@
+#include<bits/stdc++.h>
+using namespace std;
+#define ll long long
+
+// Lazy propagation...
+class SGTree {
+public:
+
+	vector<ll> seg;
+	// vector<ll> lazy;
+	SGTree(ll n) {
+		seg.resize(4 * n + 1);
+		// lazy.resize(4 * n + 1);
+
+	}
+
+	void build(ll ind, ll low, ll high, ll arr[]) {
+		if (low == high) {
+			seg[ind] = arr[low];
+			return;
+		}
+		ll mid = (low + high) >> 1;
+		build(2 * ind + 1, low, mid, arr);
+		build(2 * ind + 2, mid + 1, high, arr);
+		seg[ind] = (seg[2 * ind + 1] + seg[2 * ind + 2]);
+	}
+
+	void pointUpdate(int ind, int low, int high, int i, int val) {
+		if (low == high) {
+			seg[ind] = val;
+			return;
+		}
+		ll mid = (low + high) >> 1;
+		if (i <= mid)pointUpdate(2 * ind + 1, low, mid, i, val);
+		else pointUpdate(2 * ind + 2, mid + 1, high, i, val);
+		seg[ind] = seg[2 * ind + 1] + seg[2 * ind + 2];
+
+	}
+
+
+	ll query(int ind, int low, int high, int l, int r) {
+		if (low > r || high < l)return 0;
+
+		// complete overlap  l low high r
+		if (low >= l && high <= r) {
+			return seg[ind];
+		}
+
+		ll mid = (low + high) >> 1;
+		return (query(2 * ind + 1, low, mid, l, r) +
+		        query(2 * ind + 2, mid + 1, high, l, r));
+
+	}
+
+
+};
+
+
+int main() {
+
+	ll n, q;
+	cin >> n;
+	cin >> q;
+	ll arr[n];
+	for (ll i = 0; i < n; i++) {
+		cin >> arr[i];
+	}
+	SGTree seg1(n);
+	seg1.build(0, 0, n - 1, arr);
+	while (q--) {
+		int ty, l, r;
+		cin >> ty >> l >> r;
+
+		if (ty == 1) {
+			l--;
+			seg1.pointUpdate(0, 0, n - 1, l, r);
+		}
+		else {
+			l--, r--;
+			cout << seg1.query(0, 0, n - 1, l, r) << "\n";
+		}
+
+	}
+
+
+
+}
