@@ -1,0 +1,86 @@
+#include<bits/stdc++.h>
+using namespace std;
+#define ll long long
+
+// Lazy propagation...
+class SGTree {
+public:
+
+	vector<ll> seg;
+	// vector<ll> lazy;
+	SGTree(ll n) {
+		seg.resize(4 * n + 1);
+		// lazy.resize(4 * n + 1);
+
+	}
+
+	void build(ll ind, ll low, ll high, ll arr[]) {
+		if (low == high) {
+			seg[ind] = arr[low];
+			return ;
+		}
+
+
+		ll mid = (low + high) >> 1;
+		build(2 * ind + 1, low, mid, arr);
+		build(2 * ind + 2, mid + 1, high, arr);
+		seg[ind] = __gcd(seg[2 * ind + 1], seg[2 * ind + 2]);
+	}
+
+	ll queryRange(ll ind, ll low, ll high, ll l, ll r) {
+
+		// 	no overlap
+		// l r low high  or low high l r
+		if (r < low || high < l)return 0;
+
+		// total overlap
+		if (low >= l && high <= r) {
+			return seg[ind];
+		}
+
+		ll mid = (low + high) >> 1;
+		return __gcd(queryRange(2 * ind + 1, low, mid, l, r ),
+		             queryRange(2 * ind + 2, mid + 1, high, l, r ));
+
+
+	}
+
+
+
+};
+
+
+int main() {
+
+	ll n;
+	cin >> n;
+	ll arr[n];
+	map<ll, vector<ll>> mp;
+	for (ll i = 0; i < n; i++) {
+		cin >> arr[i];
+		mp[arr[i]].push_back(i);
+	}
+	SGTree seg1(n);
+	seg1.build(0, 0, n - 1, arr);
+	ll q;
+	cin >> q;
+	while (q--) {
+		ll l, r;
+		cin >> l >> r;
+		l--, r--;
+		int res = 0;
+		int resGcd = seg1.queryRange(0, 0, n - 1, l, r);
+		// cout << resGcd << "\n";
+		if (!mp[resGcd].empty()) {
+			int up = lower_bound(mp[resGcd].begin(), mp[resGcd].end(), l) - mp[resGcd].begin();
+			int down = upper_bound(mp[resGcd].begin(), mp[resGcd].end(), r) - mp[resGcd].begin();
+			// cout << down - up << "\n";
+			res = down - up;
+		}
+		// cout << res << "\n";
+		cout << r - l + 1 - res << "\n";
+
+	}
+
+
+}
