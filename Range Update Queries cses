@@ -1,0 +1,118 @@
+#include<bits/stdc++.h>
+using namespace std;
+#define ll long long
+
+
+// problem link -- https://cses.fi/problemset/result/5559860/
+// Lazy propagation...
+class SGTree {
+public:
+
+	vector<ll> seg;
+	vector<ll> lazy;
+	SGTree(ll n) {
+		seg.resize(4 * n + 1);
+		lazy.resize(4 * n + 1);
+
+	}
+
+	void build(ll ind, ll low, ll high, ll arr[]) {
+		if (low == high) {
+			seg[ind] = arr[low];
+			return ;
+		}
+
+
+		ll mid = (low + high) >> 1;
+		build(2 * ind + 1, low, mid, arr);
+		build(2 * ind + 2, mid + 1, high, arr);
+	}
+
+// l - r range to increase with val
+	void rangeUpdate(ll ind, ll low, ll high, ll l, ll r, ll val) {
+		if (l > r)return ;
+
+		if (lazy[ind] != 0) { // value has to be updated
+			seg[ind] += lazy[ind];
+			if (low != high) { // if they have children
+				lazy[2 * ind + 1] += lazy[ind];
+				lazy[2 * ind + 2] += lazy[ind];
+			}
+			lazy[ind] = 0; // after updating put 0 in lazy.
+
+		}
+
+		// no overlap
+		// l r low high  or low high l r
+		if (r < low || high < l)return;
+
+		// complete overlap
+		// l low high r
+		if (low >= l && high <= r) {
+			seg[ind] += val;
+			if (low != high) { // if they have children
+				lazy[2 * ind + 1] += val;
+				lazy[2 * ind + 2] += val;
+			}
+			return;
+		}
+		ll mid = (low + high) >> 1;
+		rangeUpdate(2 * ind + 1, low, mid, l, r, val);
+		rangeUpdate(2 * ind + 2, mid + 1, high, l, r, val);
+	}
+
+
+	ll queryPoll(ll ind, ll low, ll high, ll i) {
+
+		if (lazy[ind] != 0) { // value has to be updated (propagation)
+			seg[ind] += lazy[ind];
+			if (low != high) { // if they have children
+				lazy[2 * ind + 1] += lazy[ind];
+				lazy[2 * ind + 2] += lazy[ind];
+			}
+			lazy[ind] = 0; // after updating put 0 in lazy.
+		}
+
+		if (low == high) {
+			return seg[ind];
+		}
+		ll mid = (low + high) >> 1;
+		if (i <= mid)return queryPoll(2 * ind + 1, low, mid, i);
+		else return queryPoll(2 * ind + 2, mid + 1, high, i);
+
+	}
+
+};
+
+
+int main() {
+
+	ll n, q;
+	cin >> n >> q;
+	ll arr[n];
+	for (ll i = 0; i < n; i++) {
+		cin >> arr[i];
+	}
+	SGTree seg1(n);
+	seg1.build(0, 0, n - 1, arr);
+
+	while (q--) {
+		ll ty;
+		cin >> ty;
+		if (ty == 1) {
+			ll u , v, w;
+			cin >> u >> v >> w;
+			u--, v--;
+			seg1.rangeUpdate(0, 0, n - 1, u, v, w);
+		}
+		else {
+			ll k;
+			cin >> k;
+			k--;
+			cout << seg1.queryPoll(0, 0, n - 1, k) << "\n";
+		}
+
+	}
+
+
+}
