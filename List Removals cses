@@ -1,0 +1,87 @@
+/*  एक ही नारा एक ही नाम जय श्री राम -जय श्री राम  */
+#include<bits/stdc++.h>
+using namespace std;
+#define ll long long
+
+
+
+class SGTree {
+public:
+	vector<ll> seg;
+	SGTree(ll n) {
+		seg.resize(4 * n);
+	}
+	void build(ll ind, ll low, ll high, ll arr[]) {
+		if (low == high) {
+			seg[ind] = arr[low];
+			return ;
+		}
+		ll mid = (low + high) >> 1;
+		build(2 * ind + 1, low, mid, arr);
+		build(2 * ind + 2, mid + 1, high, arr);
+		seg[ind] = seg[2 * ind + 1] + seg[2 * ind + 2];
+	}
+
+	void update(ll ind, int low, int high, int i) {
+		if (low == high) {
+			seg[ind] = 0;
+			return ;
+		}
+		int mid = (low + high) >> 1;
+		if (i <= mid)update(2 * ind + 1, low, mid, i);
+		else update(2 * ind + 2, mid + 1, high, i);
+		seg[ind] = seg[2 * ind + 1] + seg[2 * ind + 2];
+
+	}
+
+	ll query(ll ind, ll low, ll high, ll l, ll r) {
+		if (low > r || high < l)return 0;
+		if (low >= l && high <= r)return seg[ind];
+
+
+		ll mid = (low + high) >> 1;
+		return query(2 * ind + 1, low, mid, l, r) + query(2 * ind + 2, mid + 1, high, l, r);
+	}
+
+};
+int main(){
+	ll n, m, i, j, k;
+	cin >> n;
+	ll arr[n];
+	ll check[n];
+	for (ll i = 0; i < n; i++) {
+		cin >> arr[i];
+		check[i] = 1;
+	}
+	SGTree seg1(n);
+	seg1.build(0, 0, n - 1, check);
+
+	for (ll i = 0; i < n; i++) {
+		ll x;
+		cin >> x;
+		ll lo = 0, hi = n - 1;
+		ll ind = 0;
+		while (lo <= hi) {
+			ll mid = (lo + hi) >> 1;
+			ll sum = seg1.query(0, 0, n - 1, 0, mid);
+// 			cout<<sum<<" ";
+			if (sum < x) {
+				lo = mid + 1;
+			}
+			else {
+				ind = mid;
+				hi = mid - 1;
+			}
+		}
+
+		check[ind] = 0;
+		seg1.update(0, 0, n - 1, ind);
+		cout << arr[ind] << " ";
+
+
+	}
+
+
+
+
+}
